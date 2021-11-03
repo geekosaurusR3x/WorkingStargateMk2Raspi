@@ -4,7 +4,7 @@ Control code for [Glitch's Working Stargate Mk2](https://www.thingiverse.com/thi
 
 Written by [Dan Clarke](https://github.com/danclarke). Dialing "address book", debug page, and other refinements added by [Jeremy Gustafson](https://github.com/jeremygustafson).
 
-Updated November 2021 for latest Raspberry Pi OS "Buster", python3, as well as a revised custom PCB to support a "wormhole" light strip.
+Updated November 2021 for latest Raspberry Pi OS "Buster", python3, as well as a [revised custom PCB](https://oshwlab.com/jeremyrgustafson/stargate-hat-with-wormhole) to support a "wormhole" light strip.
 
 A note from Jeremy: my background is in software, not electrical engineering, so I've tried to clarify some of the directions I found confusing when I was first starting my build. Those who are more familiar with electronics may find some of what I've written to be tediously over-explained, but my goal was to take both Glitch's and Dan's amazing work and make it more accessible to people like me who may need just a little extra hand-holding along the way. (in my case, my Dad provided the hand-holding!) With that said, Dan's original warning still applies:
 
@@ -25,7 +25,7 @@ Last preface: I (Jeremy) have tried hard to make these directions as complete as
 - 1x [Photoresistor / light dependent resistor (LDR)](https://www.adafruit.com/product/161)
 - 8x 1206-style [White LEDs for the ramp](https://lcsc.com/product-detail/Light-Emitting-Diodes-LED_white1206-Non-warm-tones-of-white_C71796.html) (Glitch used 8 x Broadcom ASMT-YWB1-NGJB2 - 3.2V 60mA)
 - 27x [Orange LEDs for the chevrons](https://lcsc.com/product-detail/Light-Emitting-Diodes-LED_FC-3215HOK-600H-Orange_C130716.html) (Glitch used Kingbright KPT-1608SECK 2.1V 20mA) 
-- 1x [Dan's Stargate HAT Printed Circuit Board (PCB)](https://easyeda.com/boogleoogle/Stargate-HAT), and the electronics listed in that section below
+- 1x Revised [Stargate HAT Printed Circuit Board (PCB)](https://oshwlab.com/jeremyrgustafson/stargate-hat-with-wormhole), and the electronics listed in that section below
 - thin wire, jumper wires, thin-tipped soldering iron, other various tools for electronics work, multimeter, etc
 - Optional: 1x [12V Blue LED strip for wormhole](https://smile.amazon.com/gp/product/B07MXVRSR9/)
 - Optional: 1x [WaveShare 7 inch HDMI touch screen](https://smile.amazon.com/gp/product/B077PLVZCX/)
@@ -38,7 +38,7 @@ The Adafruit Motor HAT will be stacked directly on top of the Raspberry Pi, with
 When you connect the stepper motors to the Motor HAT's terminals (M1-GND-M2 and M3-GND-M4), if you find your motors spin the wrong direction, swap the yellow and red wires to reverse the spin direction. My wires for each motor ended up as: yellow, red, (empty), green, grey.
 
 ### Custom PCB
-My revised version of Dan's [custom Stargate HAT/PCB](https://oshwlab.com/jeremyrgustafson/stargate-hat-with-wormhole) has all connections and required components marked in the silkscreen. The following components are required to be soldered directly to this PCB. Many have minimum order sizes because they come on a "tape and reel," but because they are so inexpensive it doesn't add much cost.
+My revised [custom Stargate HAT/PCB](https://oshwlab.com/jeremyrgustafson/stargate-hat-with-wormhole) based off of Dan's original design has all connections and required components marked in the silkscreen. The following components are required to be soldered directly to this PCB. Many have minimum order sizes because they come on a "tape and reel," but because they are so inexpensive it doesn't add much cost.
 
  - 11x BC847 SOT23 Transistors [C8547](https://lcsc.com/product-detail/Transistors-NPN-PNP_BC847A-1E_C8574.html)
  - 1x SS8050 1.5A Transistor [C2150](https://lcsc.com/product-detail/Bipolar-Transistors-BJT_Changjiang-Electronics-Tech-CJ-SS8050_C2150.html)
