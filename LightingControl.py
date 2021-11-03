@@ -6,6 +6,7 @@ from time import sleep
 class LightingControl:
     chevrons = [PWMLED(pin, frequency=10000) for pin in config.pins_chevron]
     gantry = PWMLED(config.pin_gantry, frequency=10000)
+    wormhole = PWMLED(config.pin_wormhole, frequency=10000)
 
     # Constructor
     def __init__(self):
@@ -27,9 +28,11 @@ class LightingControl:
         self.gantry.on()
         for chevron in self.chevrons:
             chevron.on()
+        self.wormhole.on()
 
     # Turn off ALL lighting
     def all_off(self):
+        self.wormhole.off()
         self.gantry.off()
         for chevron in self.chevrons:
             chevron.off()
@@ -51,3 +54,8 @@ class LightingControl:
     def darken_gantry(self):
         self.gantry.off()
 
+    def light_wormhole(self):
+        self.wormhole.on()
+
+    def darken_wormhole(self):
+        self.wormhole.off()

@@ -26,13 +26,16 @@ play_theme = 0
 # Once the table is populated, enter the values into the pin array below, following LED order:
 # pins_chevron = [17, 27, 22, 5, 6, 13, 26, 12, 16] # Pin order
 #pins_chevron = [17, 27, 5, 22, 6, 16, 12, 26, 13] # Actual order, COMMENT OUT when figuring out the order
-pins_chevron = [27, 16, 13, 26, 22, 12, 6, 5, 17]
+pins_chevron = [27, 16, 13, 26, 5, 12, 6, 22, 17]
 
 # Pin for the ramp LED
 pin_gantry = 24
 
 # Pin for the calibration LED
 pin_cal_led = 20
+
+# Pin for the wormhole LED light strip
+pin_wormhole = 23
 
 # Pin for the CS of MCP3008 ADC chip
 pin_adc_cs = 8
@@ -62,7 +65,6 @@ chevron_forward = Adafruit_MotorHAT.FORWARD
 chevron_backward = Adafruit_MotorHAT.BACKWARD
 
 # Expected minimum value from LDR when in the home position
-# cal_brightness = 800
 cal_brightness = 200
 
 # How much brighter the calibration LED is to the LDR vs. baseline as a percentage
@@ -73,13 +75,13 @@ cal_percentage = 200
 cal_steps_per_symbol = 30.923077
 
 # Steps for the top chevron lock
-steps_chevron_lock = 9
+steps_chevron_lock = 12
 
 # Number of steps for a full rotation of the gate
 num_steps_circle = 603
 
-# Settings you shouldn't need to change
 
+# Below are settings you shouldn't need to change
 spi_port = 0
 spi_device = 0
 ldr_index = 0           # Index of the LDR in the ADC chip

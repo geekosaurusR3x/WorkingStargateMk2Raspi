@@ -15,11 +15,13 @@ class StargateControl:
     mh = Adafruit_MotorHAT()
     motor_gate = mh.getStepper(200, config.motor_gate)
     motor_chevron = mh.getStepper(200, config.motor_chevron)
-
+    
     def __init__(self, lighting):
         self.lighting = lighting
         self.motor_gate.setSpeed(config.motor_rpm)
         self.motor_chevron.setSpeed(config.motor_rpm)
+        self.release_motor(self.motor_gate)
+        self.release_motor(self.motor_chevron)
         self.current_symbol = 0
         self.steps_per_symbol = config.cal_steps_per_symbol
 
@@ -50,7 +52,8 @@ class StargateControl:
 
             self.display_progress(step, config.num_steps_circle)
 
-        if step < 20:
+        if step < steps_per_symbol/2:
+            self.release_motor(self.motor_gate)
             raise ValueError('ERROR!!! TOO FEW STEPS DETECTED: {}'.format(step))
 
         # Success
@@ -78,7 +81,10 @@ class StargateControl:
 
         print('Interleave Drive')
         self.motor_gate.step(200, config.gate_forward, Adafruit_MotorHAT.INTERLEAVE)
-
+        
+        print('Microstep Drive')
+        self.motor_gate.step(200, config.gate_forward, Adafruit_MotorHAT.MICROSTEP)
+        
         self.release_motor(self.motor_gate)
 
     # Move to the home position, with Earth symbol at the top
@@ -116,6 +122,7 @@ class StargateControl:
             # print("LDR: {}".format(self.get_ldr_val()))
         
         if current_step == max_steps:
+            self.release_motor(self.motor_gate)
             raise ValueError('ERROR!!! TOO MANY STEPS DETECTED: {}'.format(current_step))
         
         # Now in home position, turn off lighting and set current symbol to 'home'
@@ -153,14 +160,14 @@ class StargateControl:
         if light:
             self.lighting.light_chevron(config.top_chevron)
 
-        self.motor_chevron.step(config.steps_chevron_lock, config.chevron_forward, config.motor_drive)
+        self.motor_chevron.step(config.steps_chevron_lock, config.chevron_forward, Adafruit_MotorHAT.DOUBLE)
         self.release_motor(self.motor_chevron)
 
     def unlock_chevron(self, light=True):
         if light:
             self.lighting.darken_chevron(config.top_chevron)
 
-        self.motor_chevron.step(config.steps_chevron_lock, config.chevron_backward, config.motor_drive)
+        self.motor_chevron.step(config.steps_chevron_lock, config.chevron_backward, Adafruit_MotorHAT.DOUBLE)
         self.release_motor(self.motor_chevron)
 
     def is_at_home(self):
@@ -179,7 +186,7 @@ class StargateControl:
         print('Read in {}'.format(brightness))
 
         # Gather brightness samples
-        for i in xrange(config.cal_num_samples):
+        for i in range(config.cal_num_samples):
             self.display_progress(i, config.cal_num_samples)
             val = self.get_ldr_val()
 #            print('Read in {}'.format(brightness))
@@ -217,7 +224,7 @@ class StargateControl:
         num_leds = int(round(percent * 9))
         print('Num LEDS: {}'.format(num_leds))
         self.lighting.all_off()
-        for chevron in xrange(num_leds):
+        for chevron in range(num_leds):
             self.lighting.light_chevron(chevron)
 
     # Adafruit haven't added a 'release' method to the library for steppers

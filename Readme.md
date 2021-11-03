@@ -4,6 +4,8 @@ Control code for [Glitch's Working Stargate Mk2](https://www.thingiverse.com/thi
 
 Written by [Dan Clarke](https://github.com/danclarke). Dialing "address book", debug page, and other refinements added by [Jeremy Gustafson](https://github.com/jeremygustafson).
 
+Updated November 2021 for latest Raspberry Pi OS "Buster", python3, as well as a revised custom PCB to support a "wormhole" light strip.
+
 A note from Jeremy: my background is in software, not electrical engineering, so I've tried to clarify some of the directions I found confusing when I was first starting my build. Those who are more familiar with electronics may find some of what I've written to be tediously over-explained, but my goal was to take both Glitch's and Dan's amazing work and make it more accessible to people like me who may need just a little extra hand-holding along the way. (in my case, my Dad provided the hand-holding!) With that said, Dan's original warning still applies:
 
 **Warning:** Do not attempt this build if you don't have a rudimentary understanding of electronics and Linux. This build involves surface-mount soldering, updating of Python files, and basic configuration of Linux via command line. There is no GUI.
@@ -25,6 +27,7 @@ Last preface: I (Jeremy) have tried hard to make these directions as complete as
 - 27x [Orange LEDs for the chevrons](https://lcsc.com/product-detail/Light-Emitting-Diodes-LED_FC-3215HOK-600H-Orange_C130716.html) (Glitch used Kingbright KPT-1608SECK 2.1V 20mA) 
 - 1x [Dan's Stargate HAT Printed Circuit Board (PCB)](https://easyeda.com/boogleoogle/Stargate-HAT), and the electronics listed in that section below
 - thin wire, jumper wires, thin-tipped soldering iron, other various tools for electronics work, multimeter, etc
+- Optional: 1x [12V Blue LED strip for wormhole](https://smile.amazon.com/gp/product/B07MXVRSR9/)
 - Optional: 1x [WaveShare 7 inch HDMI touch screen](https://smile.amazon.com/gp/product/B077PLVZCX/)
 - Optional: 1x [short HDMI cable for monitor](https://smile.amazon.com/gp/product/B06XT7ZTTH/)
 
@@ -35,9 +38,10 @@ The Adafruit Motor HAT will be stacked directly on top of the Raspberry Pi, with
 When you connect the stepper motors to the Motor HAT's terminals (M1-GND-M2 and M3-GND-M4), if you find your motors spin the wrong direction, swap the yellow and red wires to reverse the spin direction. My wires for each motor ended up as: yellow, red, (empty), green, grey.
 
 ### Custom PCB
-Dan's [custom Stargate HAT/PCB](https://easyeda.com/boogleoogle/Stargate-HAT) has all connections and required components marked in the silkscreen. The following components are required to be soldered directly to this PCB. Many have minimum order sizes because they come on a "tape and reel," but because they are so inexpensive it doesn't add much cost.
+My revised version of Dan's [custom Stargate HAT/PCB](https://oshwlab.com/jeremyrgustafson/stargate-hat-with-wormhole) has all connections and required components marked in the silkscreen. The following components are required to be soldered directly to this PCB. Many have minimum order sizes because they come on a "tape and reel," but because they are so inexpensive it doesn't add much cost.
 
- - 11x BC847 SOT23 [C8547](https://lcsc.com/product-detail/Transistors-NPN-PNP_BC847A-1E_C8574.html)
+ - 11x BC847 SOT23 Transistors [C8547](https://lcsc.com/product-detail/Transistors-NPN-PNP_BC847A-1E_C8574.html)
+ - 1x SS8050 1.5A Transistor [C2150](https://lcsc.com/product-detail/Bipolar-Transistors-BJT_Changjiang-Electronics-Tech-CJ-SS8050_C2150.html)
  - 10x 470ohm 0805 Resistor [C114747](https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_470R-471-5_C114747.html)
  - 2x 10k ohm 0805 Resistor [C84376](https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_10KR-1002-1_C84376.html)
  - 1x [LM2596S Buck Converter Breakout](https://www.bitsbox.co.uk/index.php?main_page=product_info&cPath=140_171&products_id=3202)
@@ -73,6 +77,7 @@ Power for the whole system is provided via the Stargate HAT/PCB, so you will not
 | GPIO10 | MOSI |
 | GPIO9 | MISO |
 | GPIO11 | SCLK |
+| GPIO23 | Wormhole |
 
 The physical Chevron wire ordering does not matter since it will be corrected in software.
 
@@ -116,52 +121,154 @@ Instead of hot glue, I soldered the three LEDs into a straight line with an inch
 
 ## Rasperry Pi Setup
 
-First install a fresh copy of [Raspbian Lite](https://www.raspberrypi.org/downloads/raspbian/), configure the Pi for SSH and continue configuration via an SSH terminal. Remote SSH access is important so that the Pi can be updated / changed without having to disassemble the ramp. You can configure wifi and SSH without needing to plug in a keyboard or monitor ("headless" setup) by following [these directions](https://www.raspberrypi.org/documentation/configuration/wireless/headless.md).
+### Install Raspbian Lite
+First [install a fresh copy of Raspbian Lite](https://www.raspberrypi.org/documentation/installation/installing-images/). At the time of this writing, the latest release was "Buster" (build date May 7, 2021). Newer versions of Raspbian may require changes to portions of these directions.
 
-**Important:** if you choose to use the WaveShare 7" monitor I listed above, don't plug it in until you've changed the required settings (described below).
+Before installing your SD card into the Pi, set it up for wireless access and ssh ("headless" setup). The exact steps here will differ depending if you're on a Mac or Windows. I've written these instructions based on macOS.
 
-Dan set up his Pi with a static IP; I chose not to do that, but you can if you want. His directions are at [https://github.com/danclarke/WorkingStargateMk2Raspi](https://github.com/danclarke/WorkingStargateMk2Raspi). Otherwise, the Pi will initially be accessible via `ssh pi@raspberrypi.local`; once it was booted, I changed the hostname to be "stargatepi", so then to connect it would be `ssh pi@stargatepi.local`.
+On your laptop, with the SD card inserted, open your Applications > Utilities > Terminal.app.
 
-Install the required packages:
+Perform step 3 from https://www.raspberrypi.org/documentation/remote-access/ssh/ to enable ssh:
+
+```touch /Volumes/boot/ssh```
+
+Then, follow these steps to set up wifi access: https://www.raspberrypi.org/documentation/configuration/wireless/headless.md
+
+```vi /Volumes/boot/wpa_supplicant.conf```
+
+(I use `vi` for my editor; if you're new to the command line, replace the word "vi" with "nano" in the command above, and anywhere else in this document that you see "vi")
+
+Add these lines to the file, changing the ssid and psk variables for your own wifi network:
 
 ```
-sudo apt update
-sudo apt install python python-daemon python-pip python-gpiozero build-essential git python-dev libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-ttf2.0-dev libsdl1.2-dev libsmpeg-dev python-numpy subversion libportmidi-dev ffmpeg libswscale-dev libavformat-dev libavcodec-dev
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+update_config=1
+country=US
+
+network={
+	ssid="YOUR WIFI NETWORK NAME"
+	psk="YOUR WIFI PASSWORD"
+}
+```
+
+Unmount the SD card and move it from your laptop to your Pi. Plug in the Pi (either directly, or, if you've already assembled your PCB HAT, you can attach the HAT onto the Pi and plug in the 5V/12A power adapter; DO NOT plug in BOTH the power adapter and also the Pi's power adapter).
+
+**Important:** if you choose to use the optional WaveShare 7" monitor I listed above, don't plug it into the Pi until you've changed the required settings (described below).
+
+Wait 5 minutes for the Pi to boot the first time. You should then be able to connect to it (in your Terminal) by typing `ssh pi@raspberrypi.local`. (Dan set up his Pi with a static IP; I chose not to do that, but you can if you want. His directions are at [https://github.com/danclarke/WorkingStargateMk2Raspi](https://github.com/danclarke/WorkingStargateMk2Raspi))
+
+Once connected, I suggest changing the hostname to `stargatepi`, and also changing the pi user's default password. To do both of these, type `sudo raspi-config` and look for the appropriate menu items. After rebooting, you can then connect with `ssh pi@stargatepi.local`.
+
+
+### Passwordless SSH
+If desired, you can also set up passwordless ssh at this time.
+
+```
+pi$ ssh-keygen
+# Hit enter at each of the prompts
+
+pi$ nano .ssh/authorized_keys
+```
+
+Into that authorized_keys file, paste the contents of this next command, then save the file:
+
+```your laptop$ cat .ssh/id_rsa.pub```
+
+
+### Run updates
+
+Even though you just installed a brand new image, check for (and install) any software updates. Follow the prompts after each of these three commands:
+
+```
+pi$
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt autoremove
+```
+
+### Optional: Install vi text editor
+
+```
+sudo apt-get install vim
+sudo update-alternatives --config editor
+```
+
+```
+vi ~/.vimrc
+# Add this line:
+set mouse-=a
+```
+
+```
+sudo vi /root/.vimrc
+# Add this line:
+set mouse-=a
+```
+
+
+### Install required packages
+
+Some of these may already be at the newest version.
+
+```
+sudo apt install python3 python3-daemon python3-pip python3-gpiozero build-essential git python3-dev libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-ttf2.0-dev libsdl1.2-dev libsmpeg-dev python3-numpy subversion libportmidi-dev ffmpeg libswscale-dev libavformat-dev libavcodec-dev
 ```
 
 Install one more package, required for controlling the speaker volume from the web page interface:
 
 ```sudo apt install alsa-utils```
 
-Next install the required Python packages:
+Install the required Python packages:
 
-```sudo pip install Adafruit-MCP3008 pygame gpiozero daemon daemontools daemontools-run python-daemon```
+```sudo pip3 install Adafruit-MCP3008 pygame gpiozero daemon daemontools python-daemon```
+
+### Configure I2C and SPI
+
+I2C and SPI are required for the Motor HAT. Follow these instructions to enable I2C:
+
+https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c
+
+Note: if you're setting up your Pi without the motor HAT attached, you will not see any devices listed at the end when running `i2cdetect`.
+
+Next, follow these instructions to enable SPI:
+
+https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-spi
+
+Lastly, update the I2C speed to 400Khz (400000): 
+
+```
+sudo vi /boot/config.txt
+
+# Add this line underneath the line "dtparam=i2c_arm=on"
+dtparam=i2c_baudrate=400000
+```
+(For additional information, see http://www.mindsensors.com/blog/how-to/change-i2c-speed-with-raspberry-pi)
 
 
-Configure I2C (required for the Motor HAT): [https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c)
+### Configure the I2S Breakout
 
-Update the I2C speed of the Raspberry Pi to 400Khz (400000): [http://www.mindsensors.com/blog/how-to/change-i2c-speed-with-raspberry-pi](http://www.mindsensors.com/blog/how-to/change-i2c-speed-with-raspberry-pi)
+Follow Adafruit's instructions for the I2S Breakout: https://learn.adafruit.com/adafruit-max98357-i2s-class-d-mono-amp/raspberry-pi-usage
 
-Follow Adafruit's instructions for the I2S Breakout: [https://learn.adafruit.com/adafruit-max98357-i2s-class-d-mono-amp/raspberry-pi-usage](https://learn.adafruit.com/adafruit-max98357-i2s-class-d-mono-amp/raspberry-pi-usage)
+When prompted, I suggest enabling the /dev/zero playback in background.
 
-Double check the necessary settings are enabled:
 
-```sudo nano /boot/config.txt```
+### Double check necessary settings are enabled
+
+```sudo vi /boot/config.txt```
 
 Look for these settings:
 
 ```
-dtparam=i2c1=on
-dtparam=i2c=on
 dtparam=i2c_arm=on
+dtparam=i2c_baudrate=400000
 #dtparam=i2s=on
 dtparam=spi=on
-dtparam=i2c_baudrate=400000
+
 ```
 
-If using the WaveShare 7" monitor, following these directions from [https://www.waveshare.com/w/upload/5/58/7inch_HDMI_LCD_%28H%29_User_Manual.pdf](https://www.waveshare.com/w/upload/5/58/7inch_HDMI_LCD_%28H%29_User_Manual.pdf) : 
+If using the WaveShare 7" monitor, follow these directions from https://www.waveshare.com/w/upload/5/58/7inch_HDMI_LCD_%28H%29_User_Manual.pdf : 
 
-```sudo nano /config.txt```
+```sudo vi /boot/config.txt```
 
 Add these lines to the bottom of the file:
 ```
@@ -187,7 +294,7 @@ Copy all of the Python files here. I used the following "rsync" command, so I co
 
 If you're using the WaveShare 7" or another touch-sensitive monitor attached to your Pi, create a script on your Pi's Desktop that will launch the web interface:
 
-```nano /home/pi/Desktop/StargateCommand.sh```
+```vi /home/pi/Desktop/StargateCommand.sh```
 
 Copy/paste these file contents:
 
@@ -236,24 +343,24 @@ cd /home/pi/stargate/web/
 wget https://code.jquery.com/jquery-3.3.1.min.js
 ```
 
-Your Stargate webpages should now load correctly on the Pi without an active internet connection.
-
 
 ## Code Setup
 
 Dan has some great functions built into main.py to allow testing of your LEDs and motors. I've also added some functionality to Dan's original code so I could test each component as I was assembling the gate. The following directions are a combination of both approaches.
 
-For each of the below tests, run `sudo python main.py` in the stargate directory to run the program.
+For each of the below tests, make sure you're in the stargate directory (`cd /home/pi/stargate`), then run `sudo python3 main.py`
 
-To test the motors: open main.py and comment out `stargate_control.quick_calibration()`, and the entire Web Control section. Uncomment `stargate_control.drive_test()`. This will spin the main gate motor. See the `drive_test()` function in StargateControl.py, and also you can edit the `motor_drive` variable in config.py to use something other than `Adafruit_MotorHAT.MICROSTEP` if desired. That seemed to be the smoothest setting for me, though. When done, undo your main.py commenting/uncommenting from this step.
+To test the motors: open main.py and comment out `stargate_control.quick_calibration()`, and the entire Web Control section. Uncomment `stargate_control.drive_test()`. This will spin the main gate motor. See the `drive_test()` function in StargateControl.py, and also you can edit the `motor_drive` variable in config.py to use something other than `MICROSTEP` if desired. That seemed to be the smoothest setting for me, though. When done, undo your main.py commenting/uncommenting from this step.
 
 To test the gate chevron LEDs, method 1 (Dan's method): open main.py and comment out `stargate_control.quick_calibration()`, and the entire Web Control section. Uncomment `light_control.cycle_chevrons()`. Make note of what order the chevrons light up, then open config.py and follow the instructions for figuring out the chevron lighting order. Update the array with your results. When done, undo your main.py commenting/uncommenting from this step.
 
-To test the gate chevron LEDs, method 2 (Jeremy's method): open main.py and comment out `stargate_control.quick_calibration()`, but leave the Web Control section active. Run the program (`sudo python main.py`), then on your Pi's attached touch-screen monitor, double tap on the StargateCommand.sh script created earlier. (If prompted with a dialog box, choose "Execute"). This will open a full-screen web browser with the dialing interface. Scroll to the bottom of the page and tap the "Testing / Debug" button. From this new page, you can turn on individual chevron LEDs, as well as the ramp LEDs and the calibration LED. I found this to be VERY useful when figuring out the LED wiring order. You can also spin the gate motor, lock/unlock the top chevron, and run the motor drive test from earlier. When finished, press Control+C to stop the program, and then undo all the commenting/uncommenting from this step.
+To test the gate chevron LEDs, method 2 (Jeremy's method): open main.py and comment out `stargate_control.quick_calibration()`, but leave the Web Control section active. Run the program (`sudo python3 main.py`), then on your Pi's attached touch-screen monitor, double tap on the StargateCommand.sh script created earlier. (If prompted with a dialog box, choose "Execute"). This will open a full-screen web browser with the dialing interface. Scroll to the bottom of the page and tap the "Testing / Debug" button. From this new page, you can turn on individual chevron LEDs, as well as the ramp LEDs and the calibration LED. I found this to be VERY useful when figuring out the LED wiring order. You can also spin the gate motor, lock/unlock the top chevron, and run the motor drive test from earlier. When finished, press Control+C to stop the program, and then undo all the commenting/uncommenting from this step.
 
-To test your LED and LDR calibration, open main.py and uncomment the "LDR TEST" section below the Web Control logic. You can leave the Web Control uncommented (or commented, it doesn't matter for this step), and be sure `stargate_control.quick_calibration()` is UN-commented. Run the program (`sudo python main.py`) and watch the output values from the LDR; when the gate reaches "home" (the "earth" symbol is at the top chevron), you should see the LDR output spike to a higher number, as the LED light shines through the small hole in the symbol at the bottom of the gate (beneath the ramp). You'll need to adjust your `cal_brightness` value in config.py based on this number. I had to get a different, brighter LED than the one I'd originally used (I hadn't used a bright enough one like Dan had recommended in his parts list), and I also needed to put some black electrical tape shrouding the LDR holder to block ambient light from bleeding in. As usual, once you're done with this step, undo all the commenting/uncommenting in main.py.
+To test your LED and LDR calibration, open main.py and uncomment the "LDR TEST" section below the Web Control logic. You can leave the Web Control uncommented (or commented, it doesn't matter for this step), and be sure `stargate_control.quick_calibration()` is UN-commented. Run the program (`sudo python3 main.py`) and watch the output values from the LDR; when the gate reaches "home" (the "earth" symbol is at the top chevron), you should see the LDR output spike to a higher number, as the LED light shines through the small hole in the symbol at the bottom of the gate (beneath the ramp). You'll need to adjust your `cal_brightness` value in config.py based on this number. I had to get a different, brighter LED than the one I'd originally used (I hadn't used a bright enough one like Dan had recommended in his parts list), and I also needed to put some black electrical tape shrouding the LDR holder to block ambient light from bleeding in. As usual, once you're done with this step, undo all the commenting/uncommenting in main.py.
 
 Lastly, do a full calibration. Open main.py and uncomment `stargate_control.full_calibration()`, then run the program. This will output some values, which you'll need to add to config.py. The calibration values all start with **cal_**.
+
+Note: if the full calibration fails while first moving the gate to "home" (the `move_home()` function), you may need to temporarily increase the `num_steps_circle` value to something significantly higher, and try again.
 
 When you've gone through all steps and updated config.py to your liking, open main.py and make sure the web control section and `stargate_control.quick_calibration()` are uncommented. Run the program. You can now open the StargateCommand.sh script on your touch-monitor, or on another computer visit to http://stargatepi.local , to control your Stargate.
 
@@ -268,15 +375,15 @@ First ensure the Python program isn't running, then execute following commands:
 ```
 sudo apt install daemontools daemontools-run
 sudo mkdir /etc/service/stargate
-sudo nano /etc/service/stargate/run
+sudo vi /etc/service/stargate/run
 ```
 
-In Nano enter the following text:
+Enter the following text:
 
 ```
 #!/bin/bash
 cd /home/pi/stargate
-exec /usr/bin/python main.py
+exec /usr/bin/python3 main.py
 ```
 
 Save the file, then execute the following:
@@ -289,15 +396,26 @@ The Python program should immediately start running. You can now control the Sta
 
 To automatically launch the dialing web page on your Pi's touch-screen monitor when the Pi boots, do the following:
 
-Edit your autostart file:
+Check to see if you already have an autostart file:
 
-```nano ~/.config/lxsession/LXDE-pi/autostart```
+```ls /home/pi/.config/lxsession/LXDE-pi/autostart```
+
+If you don't, copy the default one as a starting point:
+
+```
+mkdir -p /home/pi/.config/lxsession/LXDE-pi/
+cp /etc/xdg/lxsession/LXDE-pi/autostart /home/pi/.config/lxsession/LXDE-pi/autostart
+```
+
+Now edit it:
+
+```vi /home/pi/.config/lxsession/LXDE-pi/autostart```
 
 and add this line to the bottom (this will execute the script we created in an earlier step)
 
 ```@/bin/bash /home/pi/Desktop/StargateCommand.sh```
 
-Reboot your Pi, and the webpage should launch automatically!
+Reboot your Pi, and the webpage should launch on its attached display automatically!
 
 
 ### Screensaver
@@ -310,11 +428,11 @@ Change permissions on this file (already included in your Git download):
 
 ```chmod +x /home/pi/stargate/web/VideoScreensaver.sh```
 
-Edit your autostart file
+Edit your autostart file:
 
-```nano ~/.config/lxsession/LXDE-pi/autostart```
+```vi /home/pi/.config/lxsession/LXDE-pi/autostart```
 
-and add these lines at the end:
+and add these lines at the end: (the "xscreensaver" line may already be present, and does not need to be added again)
 
 ```
 @xscreensaver -no-splash
@@ -327,7 +445,6 @@ Your complete autostart file should now look something like this:
 @lxpanel --profile LXDE-pi
 @pcmanfm --desktop --profile LXDE-pi
 @xscreensaver -no-splash
-@point-rpi
 @/bin/bash /home/pi/Desktop/StargateCommand.sh
 @/home/pi/stargate/web/VideoScreensaver.sh
 ```

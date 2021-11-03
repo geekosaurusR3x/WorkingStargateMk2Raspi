@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import daemon
 from LightingControl import LightingControl
@@ -9,7 +9,7 @@ from StargateLogic import StargateLogic
 import config
 from time import sleep
 from WebServer import StargateHttpHandler
-from BaseHTTPServer import HTTPServer
+from http.server import HTTPServer
 import threading
 import sys
 
@@ -36,7 +36,7 @@ dial_program = DialProgram(stargate_control, light_control, audio)
 logic = StargateLogic(audio, light_control, stargate_control, dial_program)
 
 # Run this FIRST to get the best drive method
-# stargate_control.drive_test()
+#stargate_control.drive_test()
 
 # Run this SECOND to get the chevron lighting order
 # light_control.cycle_chevrons()
@@ -45,10 +45,11 @@ logic = StargateLogic(audio, light_control, stargate_control, dial_program)
 # Update "cal_brightness = 200" in config.py based on your output.
 
 # Run this FOURTH to get core calibration settings
-# stargate_control.full_calibration()
+#stargate_control.full_calibration()
 
 # Run this to TEST the dial sequence
 # dial_program.dial([26, 6, 14, 31, 11, 29, 0])
+
 
 # Web control
 print('Running web server...')
@@ -56,25 +57,32 @@ StargateHttpHandler.logic = logic
 httpd = HTTPServer(('', 80), StargateHttpHandler)
 
 httpd_thread = threading.Thread(name="HTTP", target=httpd.serve_forever)
-httpd_thread.setDaemon(True)
+httpd_thread.daemon = True
 httpd_thread.start()
+    
 
-# LDR TEST; uncomment the following three lines to output LDR values to your terminal
-#while True:
-#	print("LDR: {}".format(stargate_control.get_ldr_val()))
-#	sleep(1)
+# LDR TEST; uncomment the next three lines to output LDR values to your terminal
+# while True:
+#    print("LDR: {}".format(stargate_control.get_ldr_val()))
+#    sleep(1)
 
-# Run this NORMALLY to home the gate at start up
-# Do this calibration AFTER the web server is launched, so the web page can be opened while calibration is still running
+# For normal operation, run the quick_calibration to home the gate at start up
+# We do this AFTER the web server is launched so that the control web page can be opened while calibration is still running
 stargate_control.quick_calibration()
 
-# Infinite loop doing stuff
+# Infinite loop
 print('Running logic...')
-logic.loop()
+try:
+    logic.loop()
 
+except KeyboardInterrupt:
+    print(" ^C entered, stopping Stargate program...")
+    httpd.socket.close()
+    stargate_control.release_motor(stargate_control.motor_gate)
+    stargate_control.release_motor(stargate_control.motor_chevron)
 
 # Useful test of symbol accuracy - slowly works through each symbol on each side
-# for i in xrange(1, 19):
+# for i in range(1, 19):
 #     light_control.darken_chevron(config.top_chevron)
 #     stargate_control.move_to_symbol(i, StargateControl.FORWARD)
 #     light_control.light_chevron(config.top_chevron)

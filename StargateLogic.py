@@ -103,6 +103,12 @@ class StargateLogic:
             
             elif action == "ledOff":
                 self.stargate_control.cal_led.off()
+            
+            elif action == "wormholeOn":
+                self.light_control.light_wormhole()
+            
+            elif action == "wormholeOff":
+                self.light_control.darken_wormhole()
                 
             elif action == "chevron0":
                 self.light_control.light_chevron(0)
