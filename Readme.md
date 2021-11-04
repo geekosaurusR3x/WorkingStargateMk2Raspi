@@ -101,7 +101,9 @@ For connections to the LEDs and LDR Dan used LED strip JST connectors. I missed 
 
 The calibration LED is powered via 12V from the "Gantry" section on the Stargate HAT/PCB, with ground to the "LED" pin in the Gantry row. **The LDR must be powered via 3.3V, not 12V**, and its ground goes to the "LDR" pin in the Gantry row.
 
-On a related side-note: as far as I can tell, on the Stargate HAT, neither the Gate nor Gantry's ground ("GND") pins are used, since the ground is provided by each of individual gate chevrons and the gantry ramp LEDs. I'm not a master electrician, though, so it's entirely possible I'm wrong, all I can say is my Stargate lights up correctly and I didn't use those two pins.
+On a related side-note: as far as I can tell, on the old version of the Stargate HAT, neither the Gate nor Gantry's ground ("GND") pins are used, since the ground is provided by each of individual gate chevrons and the gantry ramp LEDs. I'm not a master electrician, though, so it's entirely possible I'm wrong, all I can say is my Stargate lights up correctly and I didn't use those two pins.
+
+Update: on my slightly-tweaked version of Dan's Stargate HAT, I've removed the extraneous ground pins and replaced them with an extra pin for the gantry ramp lights, a new pin for the blue LED light strip for the wormhole, and an extra 12V output to use if you're connecting two 12V lines into the gate chevron lights, like I did (one from each side of the gate; this is detailed below in the "LEDs" section).
 
 Lastly, use the 7-pin female header to solder the audio breakout board onto the Stargate HAT/PCB (to the "Audio" row of pins on the PCB).
 
