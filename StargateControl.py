@@ -15,6 +15,7 @@ class StargateControl:
     mh = Adafruit_MotorHAT()
     motor_gate = mh.getStepper(200, config.motor_gate)
     motor_chevron = mh.getStepper(200, config.motor_chevron)
+    chevron_engaged = False
     
     def __init__(self, lighting):
         self.lighting = lighting
@@ -162,6 +163,7 @@ class StargateControl:
 
         self.motor_chevron.step(config.steps_chevron_lock, config.chevron_forward, Adafruit_MotorHAT.DOUBLE)
         self.release_motor(self.motor_chevron)
+        self.chevron_engaged = True
 
     def unlock_chevron(self, light=True):
         if light:
@@ -169,6 +171,7 @@ class StargateControl:
 
         self.motor_chevron.step(config.steps_chevron_lock, config.chevron_backward, Adafruit_MotorHAT.DOUBLE)
         self.release_motor(self.motor_chevron)
+        self.chevron_engaged = False
 
     def is_at_home(self):
         self.cal_led.on()

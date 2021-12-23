@@ -26,22 +26,29 @@ class LightingControl:
     # Turn on ALL lighting
     def all_on(self):
         self.gantry.on()
-        for chevron in self.chevrons:
-            chevron.on()
+        self.all_chevrons_on()
         self.wormhole.on()
 
     # Turn off ALL lighting
     def all_off(self):
         self.wormhole.off()
         self.gantry.off()
+        self.all_chevrons_off()
+    
+    # Turn on all chevrons
+    def all_chevrons_on(self):
+        for chevron in self.chevrons:
+            chevron.on()
+    
+    # Turn off all chevrons
+    def all_chevrons_off(self):
         for chevron in self.chevrons:
             chevron.off()
-
+    
     # Enable a single chevron
     def light_chevron(self, index, exclusive=False, value=1):
         if exclusive:
             self.all_off()
-
         self.chevrons[index].value = value
 
     # Darken a single chevron

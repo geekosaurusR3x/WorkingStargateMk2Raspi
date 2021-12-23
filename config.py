@@ -5,6 +5,9 @@ from Adafruit_MotorHAT_Motors import Adafruit_MotorHAT
 # Play the SG1 theme after dialing the gate, before closing the wormhole
 play_theme = 0
 
+# Enable Chief Master Sergeant Norman Walter Davis Harriman "chevron 1 encoded" sound effects
+enable_gary_jones = 1
+
 # Chevron pins, from bottom-left to bottom-right.
 # Index 0 will be bottom-left, 4 will be the top, 8 will be the bottom-right
 #

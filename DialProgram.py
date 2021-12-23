@@ -31,15 +31,30 @@ class DialProgram:
             self.audio.play_chevron_lock()
             sleep(config.audio_delay_time)
             self.gateControl.lock_chevron()
-            sleep(config.chevron_engage_time)
+            if config.enable_gary_jones and length == 7: # Not currently available for 8 or 9-symbol addresses
+                # Wait for play_chevron_lock() to finish
+                while self.audio.is_playing():
+                    sleep(0.1)
+                    continue
+                self.audio.play_chevron(i+1)
+                sleep(config.audio_delay_time)
+                if i == 6: # Wait for "chevron 7 locked" before engaging wormhole
+                    while self.audio.is_playing():
+                        sleep(0.1)
+                        continue
+            else:
+                sleep(config.chevron_engage_time)
             self.audio.play_chevron_unlock()
             sleep(config.audio_delay_time)
-            self.gateControl.unlock_chevron()
+            if i == length-1:
+                self.gateControl.unlock_chevron(False)
+            else:
+                self.gateControl.unlock_chevron()
             while self.audio.is_playing():
                 sleep(0.01)
                 continue
-            if i == length-1:
-                break
+            #if i == length-1:
+            #    break
 
             self.lightControl.light_chevron(config.chevron_light_order[i])
 
@@ -50,6 +65,7 @@ class DialProgram:
 
         self.audio.play_open()
         self.lightControl.all_on()
+        sleep(1)
         while self.audio.is_playing():
             sleep(0.1)
             continue

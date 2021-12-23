@@ -11,7 +11,7 @@ from time import sleep
 from WebServer import StargateHttpHandler
 from http.server import HTTPServer
 import threading
-import sys
+import sys, traceback
 
 #
 # Working Stargate Mk2 by Glitch, code by Dan Clarke, modified by Jeremy Gustafson
@@ -78,9 +78,24 @@ try:
 except KeyboardInterrupt:
     print(" ^C entered, stopping Stargate program...")
     httpd.socket.close()
+    light_control.all_off()
     stargate_control.release_motor(stargate_control.motor_gate)
     stargate_control.release_motor(stargate_control.motor_chevron)
 
+
+except Exception as e:
+    print(e)
+    print(traceback.format_exc())
+    print("Caught exception. Exiting gracefully")
+    httpd.socket.close()
+    light_control.all_off()
+    if stargate_control.chevron_engaged:
+        stargate_control.unlock_chevron()
+    stargate_control.release_motor(stargate_control.motor_gate)
+    stargate_control.release_motor(stargate_control.motor_chevron)
+    exit(1)
+	
+	
 # Useful test of symbol accuracy - slowly works through each symbol on each side
 # for i in range(1, 19):
 #     light_control.darken_chevron(config.top_chevron)

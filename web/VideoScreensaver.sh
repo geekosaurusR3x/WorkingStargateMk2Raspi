@@ -2,6 +2,8 @@
 
 # https://www.raspberrypi.org/forums/viewtopic.php?t=167789
 
+sleep 5
+
 process() {
 while read input; do 
   case "$input" in

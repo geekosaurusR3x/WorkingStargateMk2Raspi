@@ -2,7 +2,7 @@ from AnimChase import AnimChase
 from AnimRing import AnimRing
 from AnimClock import AnimClock
 from time import sleep
-import config
+import config, random
 
 
 # self.state values:
@@ -44,13 +44,13 @@ class StargateLogic:
             action = command['action']
             
             if action == "spinBackward":
-                #self.stargate_control.motor_gate.step(self.stargate_control.steps_per_symbol, config.gate_backward, config.motor_drive)
-                self.stargate_control.motor_gate.step(20, config.gate_backward, config.motor_drive)
+                self.stargate_control.motor_gate.step(round(self.stargate_control.steps_per_symbol), config.gate_backward, config.motor_drive)
+                #self.stargate_control.motor_gate.step(20, config.gate_backward, config.motor_drive)
                 self.stargate_control.release_motor(self.stargate_control.motor_gate)
             
             elif action == "spinForward":
-                #self.stargate_control.motor_gate.step(self.stargate_control.steps_per_symbol, config.gate_forward, config.motor_drive)
-                self.stargate_control.motor_gate.step(20, config.gate_forward, config.motor_drive)
+                self.stargate_control.motor_gate.step(round(self.stargate_control.steps_per_symbol), config.gate_forward, config.motor_drive)
+                #self.stargate_control.motor_gate.step(20, config.gate_forward, config.motor_drive)
                 self.stargate_control.release_motor(self.stargate_control.motor_gate)
             
             elif action =="driveTest":
@@ -60,9 +60,16 @@ class StargateLogic:
                 self.stargate_control.move_home()
                 
             elif action == "lockChevron":
-                self.stargate_control.lock_chevron(0)
-                sleep(1)
-                self.stargate_control.unlock_chevron(0)
+                self.stargate_control.lock_chevron()
+                if config.enable_gary_jones:
+                    chevron = random.randrange(len(self.audio.chevron_files))
+                    self.audio.play_chevron(chevron)
+                    while self.audio.is_playing():
+                        sleep(0.1)
+                        continue
+                else:
+                    sleep(1)
+                self.stargate_control.unlock_chevron()
                 
             elif action == "allLightsOn":
                 self.light_control.all_on()
@@ -71,26 +78,10 @@ class StargateLogic:
                 self.light_control.all_off()
             
             elif action == "ringOn":
-                self.light_control.light_chevron(0)
-                self.light_control.light_chevron(1)
-                self.light_control.light_chevron(2)
-                self.light_control.light_chevron(3)
-                self.light_control.light_chevron(4)
-                self.light_control.light_chevron(5)
-                self.light_control.light_chevron(6)
-                self.light_control.light_chevron(7)
-                self.light_control.light_chevron(8)
+                self.light_control.all_chevrons_on()
             
             elif action == "ringOff":
-                self.light_control.darken_chevron(0)
-                self.light_control.darken_chevron(1)
-                self.light_control.darken_chevron(2)
-                self.light_control.darken_chevron(3)
-                self.light_control.darken_chevron(4)
-                self.light_control.darken_chevron(5)
-                self.light_control.darken_chevron(6)
-                self.light_control.darken_chevron(7)
-                self.light_control.darken_chevron(8)
+                self.light_control.all_chevrons_off()
             
             elif action == "rampOn":
                 self.light_control.light_gantry()

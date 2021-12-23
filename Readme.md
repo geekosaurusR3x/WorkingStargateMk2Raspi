@@ -447,7 +447,7 @@ Your complete autostart file should now look something like this:
 @lxpanel --profile LXDE-pi
 @pcmanfm --desktop --profile LXDE-pi
 @xscreensaver -no-splash
-@/bin/bash /home/pi/Desktop/StargateCommand.sh
+@/bin/bash 'sleep 5 ; /home/pi/Desktop/StargateCommand.sh'
 @/home/pi/stargate/web/VideoScreensaver.sh
 ```
 
