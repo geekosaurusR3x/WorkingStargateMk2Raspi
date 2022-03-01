@@ -6,7 +6,7 @@ from Adafruit_MotorHAT_Motors import Adafruit_MotorHAT
 play_theme = 0
 
 # Enable Chief Master Sergeant Norman Walter Davis Harriman "chevron 1 encoded" sound effects
-enable_gary_jones = 1
+enable_gary_jones = 0
 
 # Chevron pins, from bottom-left to bottom-right.
 # Index 0 will be bottom-left, 4 will be the top, 8 will be the bottom-right
@@ -28,8 +28,8 @@ enable_gary_jones = 1
 #
 # Once the table is populated, enter the values into the pin array below, following LED order:
 # pins_chevron = [17, 27, 22, 5, 6, 13, 26, 12, 16] # Pin order
-#pins_chevron = [17, 27, 5, 22, 6, 16, 12, 26, 13] # Actual order, COMMENT OUT when figuring out the order
-pins_chevron = [27, 16, 13, 26, 5, 12, 6, 22, 17]
+pins_chevron = [6, 27, 16,17, 12, 22, 13, 5,26] # Actual order, COMMENT OUT when figuring out the order
+#pins_chevron = [17,27,22,5,6,13,26,12,16]
 
 # Pin for the ramp LED
 pin_gantry = 24
@@ -44,10 +44,10 @@ pin_wormhole = 23
 pin_adc_cs = 8
 
 # Motor number 'Mx' for gate
-motor_gate = 2
+motor_gate = 1
 
 # Motor number 'Mx' for chevron
-motor_chevron = 1
+motor_chevron = 2
 
 # RPM for the motors
 motor_rpm = 100
@@ -62,23 +62,23 @@ gate_forward = Adafruit_MotorHAT.FORWARD
 gate_backward = Adafruit_MotorHAT.BACKWARD
 
 # 'Forward' direction for chevron
-chevron_forward = Adafruit_MotorHAT.FORWARD
+chevron_forward = Adafruit_MotorHAT.BACKWARD
 
 # 'Backward' direction for chevron
-chevron_backward = Adafruit_MotorHAT.BACKWARD
+chevron_backward = Adafruit_MotorHAT.FORWARD
 
 # Expected minimum value from LDR when in the home position
-cal_brightness = 200
+cal_brightness = 150
 
 # How much brighter the calibration LED is to the LDR vs. baseline as a percentage
-cal_percentage = 200
+cal_percentage = 400
 
 # Number of steps of the motor per full symbol movement
 #cal_steps_per_symbol = 15.46153846153846 * 2  # x2 because reasons
 cal_steps_per_symbol = 30.923077
 
 # Steps for the top chevron lock
-steps_chevron_lock = 12
+steps_chevron_lock = 9
 
 # Number of steps for a full rotation of the gate
 num_steps_circle = 603

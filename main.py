@@ -35,22 +35,6 @@ stargate_control = StargateControl(light_control)
 dial_program = DialProgram(stargate_control, light_control, audio)
 logic = StargateLogic(audio, light_control, stargate_control, dial_program)
 
-# Run this FIRST to get the best drive method
-#stargate_control.drive_test()
-
-# Run this SECOND to get the chevron lighting order
-# light_control.cycle_chevrons()
-
-# THIRD, uncomment the "LDR TEST" section below, and also the quick_calibration (if commented out), to test LDR values during initial build/debugging.
-# Update "cal_brightness = 200" in config.py based on your output.
-
-# Run this FOURTH to get core calibration settings
-#stargate_control.full_calibration()
-
-# Run this to TEST the dial sequence
-# dial_program.dial([26, 6, 14, 31, 11, 29, 0])
-
-
 # Web control
 print('Running web server...')
 StargateHttpHandler.logic = logic
@@ -60,11 +44,6 @@ httpd_thread = threading.Thread(name="HTTP", target=httpd.serve_forever)
 httpd_thread.daemon = True
 httpd_thread.start()
     
-
-# LDR TEST; uncomment the next three lines to output LDR values to your terminal
-# while True:
-#    print("LDR: {}".format(stargate_control.get_ldr_val()))
-#    sleep(1)
 
 # For normal operation, run the quick_calibration to home the gate at start up
 # We do this AFTER the web server is launched so that the control web page can be opened while calibration is still running

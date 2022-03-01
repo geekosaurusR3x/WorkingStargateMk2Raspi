@@ -1,0 +1,13 @@
+[Unit]
+Description=Stagate Service
+After=multi-user.target
+
+[Service]
+Environment=PYTHONUNBUFFERED=true
+Type=simple
+Restart=always
+WorkingDirectory=/home/pi/stargate
+ExecStart=/home/pi/stargate/main.py
+
+[Install]
+WantedBy=multi-user.target
