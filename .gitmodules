@@ -1,0 +1,3 @@
+[submodule "StargateNetwork"]
+	path = StargateNetwork
+	url = git@github.com:geekosaurusR3x/StargateNetwork.git

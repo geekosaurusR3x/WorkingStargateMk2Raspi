@@ -83,6 +83,9 @@ steps_chevron_lock = 9
 # Number of steps for a full rotation of the gate
 num_steps_circle = 603
 
+# Enable network logic
+enable_network = True
+
 
 # Below are settings you shouldn't need to change
 spi_port = 0

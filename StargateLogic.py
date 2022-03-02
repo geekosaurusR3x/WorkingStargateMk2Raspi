@@ -1,7 +1,8 @@
+from enum import Enum
+import time
 from AnimChase import AnimChase
 from AnimRing import AnimRing
 from AnimClock import AnimClock
-from time import sleep
 import config, random
 
 
@@ -13,34 +14,61 @@ import config, random
 # 4: testing/debug
 # 5: all lights off
 # 6: do nothing
+class StargateState(Enum):
+    TESTDEBUG=-1
+    IDLE=0
+    DIAL=1
+    OPEN=2
+    CLOSE=3
+    ANIMCHASE=10
+    ANIMRING=11
+    ANIMCLOCK=12
+    ALLOFF=13
 
 class StargateLogic:
-    def __init__(self, audio, light_control, stargate_control, dial_program):
+    CONST_OPENTIME_INTERFACE = 2
+    CONST_OPENTIME_NETWORK = 10
+
+    def __init__(self, audio, light_control, stargate_control, dial_program,stargate_network):
         self.audio = audio
         self.light_control = light_control
         self.stargate_control = stargate_control
         self.dial_program = dial_program
+        self.stargate_network = stargate_network
         self.anim_chase = AnimChase(light_control)
         self.anim_ring = AnimRing(light_control)
         self.anim_clock = AnimClock(light_control)
-        self.state = 5
+        self.state = StargateState.IDLE
         self.address = []
         self.state_changed = True
+        self.callbackDial = None
+        self.openTime = 0
+
+        self.stargate_network.onIncomingConnection += self.dialFromNetwork
+        self.stargate_network.onIncomingDisconnection += self.closeFromNetwork
+
+    def dialFromNetwork(self, sequence,callback):
+        self.address = list(map(int,sequence.split('.')))
+        self.callbackDial = callback
+        self.state = StargateState.DIAL
+    
+    def closeFromNetwork(self):
+        self.state = StargateState.CLOSE
 
     def execute_command(self, command):
         self.state_changed = True
-        self.state = command['anim']
-
-        if self.state == 2:
+        self.state = StargateState(command['anim'])
+        if self.state == StargateState.DIAL:
             address = command['sequence']
             #if len(address) != 7:
             if len(address) < 7:
-                self.state = 0
+                self.state = StargateState.ANIMCHASE
                 return
             self.address = address
-        
-        elif self.state == 4:
-            self.state = 6
+            self.callbackDial = None
+
+        elif self.state == StargateState.TESTDEBUG:
+            self.state = StargateState.IDLE
             action = command['action']
             
             if action == "spinBackward":
@@ -65,10 +93,10 @@ class StargateLogic:
                     chevron = random.randrange(len(self.audio.chevron_files))
                     self.audio.play_chevron(chevron)
                     while self.audio.is_playing():
-                        sleep(0.1)
+                        time.sleep(0.1)
                         continue
                 else:
-                    sleep(1)
+                    time.sleep(1)
                 self.stargate_control.unlock_chevron()
                 
             elif action == "allLightsOn":
@@ -134,22 +162,30 @@ class StargateLogic:
             state_changed = self.state_changed
             self.state_changed = False
 
+            if(self.state == StargateState.OPEN):
+                diff = self.CONST_OPENTIME_INTERFACE if(self.callbackDial is None) else self.CONST_OPENTIME_NETWORK
+                if(self.openTime + diff < time.time()):
+                    self.state = StargateState.CLOSE
+
             # Call relevant logic depending on state
-            if self.state == 2:
+            if self.state == StargateState.DIAL:
                 self.light_control.all_off()
-                self.dial_program.dial(self.address)
-                self.state = 5
-            elif self.state == 0:
+                self.dial_program.dial(self.address,self.callbackDial)
+                self.state = StargateState.OPEN
+                self.openTime = time.time()
+            elif self.state == StargateState.ANIMCHASE:
                 delay = self.anim_chase.animate(state_changed)
-                sleep(delay)
-            elif self.state == 1:
+                time.sleep(delay)
+            elif self.state == StargateState.ANIMRING:
                 delay = self.anim_ring.animate(state_changed)
-                sleep(delay)
-            elif self.state == 3:
+                time.sleep(delay)
+            elif self.state == StargateState.ANIMCLOCK:
                 delay = self.anim_clock.animate(state_changed)
-                sleep(delay)
-            elif self.state == 5:
+                time.sleep(delay)
+            elif self.state == StargateState.CLOSE:
+                self.dial_program.close()
+                self.state = StargateState.IDLE
+            elif self.state == StargateState.ALLOFF:
                 self.light_control.all_off()
-                sleep(1)
-            else:
-                sleep(1)
+            
+            time.sleep(1)

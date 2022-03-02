@@ -11,7 +11,7 @@ class DialProgram:
         self.lightControl = lightControl
         self.audio = audio
 
-    def dial(self, address):
+    def dial(self, address,callback):
         length = len(address);
         if (length < 7) or (length > 9):
             raise ValueError('Address length must be 7, 8, or 9')
@@ -63,6 +63,8 @@ class DialProgram:
             else:
                 direction = StargateControl.FORWARD
 
+        if(config.enable_network and callback is not None):
+            callback()
         self.audio.play_open()
         self.lightControl.all_on()
         sleep(1)
@@ -70,13 +72,16 @@ class DialProgram:
             sleep(0.1)
             continue
 
+        
         if config.play_theme:
-	        self.audio.play_theme()
-	        
+                    self.audio.play_theme()
+
         while self.audio.is_playing():
             sleep(0.1)
             continue
 
-        self.audio.play_close()
-        self.lightControl.all_off()
         DialProgram.is_dialing = False
+
+    def close(self):
+         self.audio.play_close()
+         self.lightControl.all_off()

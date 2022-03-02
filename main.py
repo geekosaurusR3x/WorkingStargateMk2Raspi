@@ -10,6 +10,7 @@ import config
 from time import sleep
 from WebServer import StargateHttpHandler
 from http.server import HTTPServer
+from StargateNetwork.stargate_network.stargate_network import StargateNetwork
 import threading
 import sys, traceback
 
@@ -32,8 +33,9 @@ import sys, traceback
 audio = StargateAudio()
 light_control = LightingControl()
 stargate_control = StargateControl(light_control)
+stargate_network = StargateNetwork()
 dial_program = DialProgram(stargate_control, light_control, audio)
-logic = StargateLogic(audio, light_control, stargate_control, dial_program)
+logic = StargateLogic(audio, light_control, stargate_control, dial_program,stargate_network)
 
 # Web control
 print('Running web server...')
@@ -51,11 +53,21 @@ stargate_control.quick_calibration()
 
 # Infinite loop
 print('Running logic...')
+if(config.enable_network):
+    stargate_network.powerOn()
+    print("network status: "+str(stargate_network.powered))
+    sequence = stargate_network.getAddressOnNetwork()
+    for i in sequence:
+        print(i, end=" ")
+    print("");
+
 try:
     logic.loop()
 
 except KeyboardInterrupt:
     print(" ^C entered, stopping Stargate program...")
+    if(config.enable_network & stargate_network.powered):
+        stargate_network.powerOff()
     httpd.socket.close()
     light_control.all_off()
     stargate_control.release_motor(stargate_control.motor_gate)
