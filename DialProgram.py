@@ -5,6 +5,7 @@ import config
 
 class DialProgram:
     is_dialing = False
+    is_dialed = False
 
     def __init__(self, gateControl, lightControl, audio):
         self.gateControl = gateControl
@@ -82,6 +83,31 @@ class DialProgram:
 
         DialProgram.is_dialing = False
 
+    def dialed(self,callback):
+        DialProgram.is_dialed = True
+        self.lightControl.all_off()
+        self.lightControl.all_off()
+
+        for i in [4,5,6,7,1,2,3]:
+            self.lightControl.light_chevron(i)
+            self.audio.play_chevron_lock()
+            while self.audio.is_playing():
+                sleep(0.1)
+                continue
+
+        if(config.enable_network and callback is not None):
+            callback()
+        
+        self.audio.play_open()
+        self.lightControl.all_on()
+        sleep(1)
+        while self.audio.is_playing():
+            sleep(0.1)
+            continue
+        
+        DialProgram.is_dialed = False
+
     def close(self):
-         self.audio.play_close()
-         self.lightControl.all_off()
+        self.audio.play_close()
+        sleep(1)
+        self.lightControl.all_off()
