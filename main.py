@@ -55,11 +55,13 @@ stargate_control.quick_calibration()
 print('Running logic...')
 if(config.enable_network):
     stargate_network.powerOn()
+    StargateHttpHandler.stargate_network = stargate_network
     print("network status: "+str(stargate_network.powered))
     sequence = stargate_network.getAddressOnNetwork()
-    for i in sequence:
-        print(i, end=" ")
-    print("");
+    print(sequence)
+    #for i in sequence:
+    #    print(i, end=" ")
+    #print("");
 
 try:
     logic.loop()

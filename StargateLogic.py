@@ -49,6 +49,7 @@ class StargateLogic:
         self.stargate_network.onDialingConnected += self.dialConnected
         self.stargate_network.onIncomingConnection += self.dialFromNetwork
         self.stargate_network.onIncomingDisconnection += self.closeFromNetwork
+        self.dialFromBook = False;
 
     def dialConnected(self):
         self.dial_program.outConnected = True
@@ -65,6 +66,7 @@ class StargateLogic:
         self.state_changed = True
         self.state = StargateState(command['anim'])
         if self.state == StargateState.DIAL:
+            self.dialFromBook = command['dialFromBook']
             address = command['sequence']
             #if len(address) != 7:
             if len(address) < 7:
@@ -174,10 +176,11 @@ class StargateLogic:
             # Call relevant logic depending on state
             if self.state == StargateState.DIAL:
                 address = '.'.join(map(str, self.address))
-                self.stargate_network.dial(address)
+                if(not self.dialFromBook):
+                    self.stargate_network.dial(address)
                 self.light_control.all_off()
-                self.dial_program.dial(self.address)
-                if(self.stargate_network.connected):
+                self.dial_program.dial(self.address,self.dialFromBook)
+                if(self.stargate_network.connected or self.dialFromBook):
                     self.state = StargateState.OPEN
                     self.openTime = time.time()
                 else:

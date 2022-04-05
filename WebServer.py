@@ -10,6 +10,8 @@ from http.server import SimpleHTTPRequestHandler
 from DialProgram import DialProgram
 
 class StargateHttpHandler(SimpleHTTPRequestHandler):
+    stargate_network = None
+
     def translate_path(self, path):
         path = SimpleHTTPRequestHandler.translate_path(self, path)
         relpath = os.path.relpath(path, os.getcwd())
@@ -17,6 +19,13 @@ class StargateHttpHandler(SimpleHTTPRequestHandler):
         return fullpath
 
     def do_POST(self):
+        if(self.path == '/adresss'):
+            self.send_response(200,'OK')
+            self.end_headers()
+            json_object = json.dumps(self.stargate_network.getAddressOnNetwork(), indent = 4) 
+            self.wfile.write(bytes(json_object,"utf-8"))
+            return
+
         # For debugging:
         # print('POST: {}'.format(self.path))
         if self.path == '/shutdown':

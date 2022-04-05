@@ -13,7 +13,6 @@ html {
     transition-duration: 1s;
     overflow: hidden; /* to border float'd elements */
 }
-
     .dial-sequence .chevron:last-child {
         margin-right: 0
     }
@@ -50,6 +49,21 @@ html {
 
 
 
+.self-sequence {
+    clear:both;
+    min-height: 100px;
+    padding: 10px;
+    margin: 0 5px 20px;
+    transition-property: border;
+    transition-duration: 1s;
+    overflow: hidden; /* to border float'd elements */
+}
+
+.self-sequence .chevron {
+    border: none;
+}
+
+        
 .chevrons {
     max-width: 1460px;
     margin: 0 auto;

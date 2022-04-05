@@ -50,11 +50,16 @@
         <div class="chevron" num="35" id="chevron36"><img src="chevrons/037.svg" />35</div>
         <div class="chevron" num="36" id="chevron37"><img src="chevrons/038.svg" />36</div>
         <div class="chevron" num="37" id="chevron38"><img src="chevrons/039.svg" />37</div>
-        <div class="chevron unavailable" num="38" id="chevron39"><img src="chevrons/001.svg" />38</div>
+        <div class="chevron unavailable" num="38" id="chevron39"><img src="chevrons/040.svg" />38</div>
         <div class="chevronPresets" id="presetAddressesButton" onclick="window.location = 'dialingcomputer.htm';">
             Dialing Computer</div>
         <div class="chevronReset" onclick="reset();">Reset</div>
     </div>
+
+    <div id="selfAdress" class="self-sequence">
+        <div><h2>Public Gate Adresss</h2></div>
+    </div>
+
 
     <div class="animations">
         <br /><br />
@@ -98,27 +103,43 @@
         let dialSeq = [];
         let enableDialing = true;
         let checkDialingInt = 0;
+        let dialFromBook = false;
 
         function checkDialing() {
             $.post({
                 url: '/dialstatus'
             })
                 .done(function (data, status, xhr) {
-                    if (xhr.status === 204) {
+                    if (xhr.status === 200) {
                         clearInterval(checkDialingInt);
                         reset();
                     }
                 });
         }
 
+        function checkIp(){
+            $.post({
+                url: '/adresss'
+            })
+                .done(function (data, status, xhr) {
+                    if (xhr.status === 200) {
+                        data = JSON.parse(data);
+                        data["WAN"].forEach(element => {
+                            if(element == 38) return;
+                            nb = 2+element;
+                            $("#selfAdress").html($("#selfAdress").html()+'<div class="chevron show"><img src="chevrons/'+String(nb).padStart(3, '0')+'.svg" />'+element+'</div>');
+                        });
+                    }
+                });
+        }
         function dial() {
             enableDialing = false;
-
             $('.dial-sequence').addClass('dialing');
 
             $.post({
                 url: '/update',
                 data: JSON.stringify({
+                    dialFromBook:dialFromBook,
                     anim: 1,
                     sequence: dialSeq
                 })
@@ -130,13 +151,14 @@
                     alert('Could not send dialling sequence!');
                     reset();
                 });
+            dialFromBook = false;
         }
 
         function reset() {
             dialSeq = [];
             enableDialing = true;
             $('.chevron').removeClass("unavailable");
-            $('#chevron1').addClass("unavailable");
+            $('#chevron39').addClass("unavailable");
             $('.dial-sequence').html('').removeClass('dialing');
         }
 
@@ -235,8 +257,10 @@
         // alert($_GET.address);    // 2
         if ($_GET.address) {
             var chevrons = $_GET.address.split("-");
-            chevrons.push("1");
+            chevrons.push("39");
+            console.log(chevrons);
             var timeouts = [];
+            dialFromBook = true;
             for (i = 0; i < 9; i++)
                 timeouts.push(500 * i);
             function clickChevron(chevrons, i) {
@@ -246,6 +270,8 @@
                 clickChevron(chevrons, i);
             }
         }
+
+        checkIp();
     </script>
 </body>
 

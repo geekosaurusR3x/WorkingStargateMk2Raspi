@@ -13,9 +13,9 @@ class DialProgram:
         self.audio = audio
         self.outConnected = False;
 
-    def dial(self, address):
+    def dial(self, address,dialFromBook = False):
         if(config.enable_network):
-            self.outConnected = False
+            self.outConnected = dialFromBook
         
         length = len(address);
         if (length < 7) or (length > 9):
