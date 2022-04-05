@@ -85,6 +85,8 @@ num_steps_circle = 603
 
 # Enable network logic
 enable_network = True
+#network port
+network_port = 24801
 
 
 # Below are settings you shouldn't need to change

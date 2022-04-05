@@ -33,7 +33,7 @@ import sys, traceback
 audio = StargateAudio()
 light_control = LightingControl()
 stargate_control = StargateControl(light_control)
-stargate_network = StargateNetwork()
+stargate_network = StargateNetwork('',config.network_port)
 dial_program = DialProgram(stargate_control, light_control, audio)
 logic = StargateLogic(audio, light_control, stargate_control, dial_program,stargate_network)
 

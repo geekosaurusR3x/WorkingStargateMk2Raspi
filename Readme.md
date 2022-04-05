@@ -1,4 +1,4 @@
-# Working Stargate Mk2 Control Code with Raspberry Pi
+# Working Stargate Mk2 Control Code with Raspberry Pi And network Code
 
 Control code for [Glitch's Working Stargate Mk2](https://www.thingiverse.com/thing:1603423) via a web browser.
 
@@ -453,6 +453,9 @@ Your complete autostart file should now look something like this:
 
 And, of course, download a video you'd like for the screensaver. You can name it "SGCSpinningLogoAnimation.mp4" and drop it into the "web" folder, or if it's named something else, edit the VideoScreensaver.sh script to use your correct filename.
 
+### Network
+
+Nat the port 24801 on your routeur to your stargate
 
 ### That's it!
 
