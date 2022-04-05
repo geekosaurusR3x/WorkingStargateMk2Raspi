@@ -46,9 +46,13 @@ class StargateLogic:
         self.callbackDial = None
         self.openTime = 0
 
+        self.stargate_network.onDialingConnected += self.dialConnected
         self.stargate_network.onIncomingConnection += self.dialFromNetwork
         self.stargate_network.onIncomingDisconnection += self.closeFromNetwork
 
+    def dialConnected(self):
+        self.dial_program.outConnected = True
+    
     def dialFromNetwork(self, sequence,callback):
         self.address = list(map(int,sequence.split('.')))
         self.callbackDial = callback
@@ -169,10 +173,15 @@ class StargateLogic:
 
             # Call relevant logic depending on state
             if self.state == StargateState.DIAL:
+                address = '.'.join(map(str, self.address))
+                self.stargate_network.dial(address)
                 self.light_control.all_off()
                 self.dial_program.dial(self.address)
-                self.state = StargateState.OPEN
-                self.openTime = time.time()
+                if(self.stargate_network.connected):
+                    self.state = StargateState.OPEN
+                    self.openTime = time.time()
+                else:
+                    self.state = StargateState.ALLOFF
             elif self.state == StargateState.DIALED:
                 self.light_control.all_off()
                 self.dial_program.dialed(self.callbackDial)
@@ -195,5 +204,6 @@ class StargateLogic:
                 self.state = StargateState.IDLE
             elif self.state == StargateState.ALLOFF:
                 self.light_control.all_off()
+                self.state = StargateState.IDLE
             
             time.sleep(1)

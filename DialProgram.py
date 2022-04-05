@@ -11,8 +11,12 @@ class DialProgram:
         self.gateControl = gateControl
         self.lightControl = lightControl
         self.audio = audio
+        self.outConnected = False;
 
-    def dial(self, address,callback):
+    def dial(self, address):
+        if(config.enable_network):
+            self.outConnected = False
+        
         length = len(address);
         if (length < 7) or (length > 9):
             raise ValueError('Address length must be 7, 8, or 9')
@@ -20,9 +24,9 @@ class DialProgram:
         DialProgram.is_dialing = True
         self.lightControl.all_off()
         self.gateControl.move_home()
-        self.lightControl.all_off()
 
         direction = StargateControl.FORWARD
+
         for i, symbol in enumerate(address):
             self.audio.play_roll()
             sleep(config.audio_delay_time)
@@ -32,6 +36,15 @@ class DialProgram:
             self.audio.play_chevron_lock()
             sleep(config.audio_delay_time)
             self.gateControl.lock_chevron()
+            
+            if(config.enable_network):
+                if(i == 7 and not self.outConnected):
+                    sleep(config.chevron_engage_time+6)
+                    self.gateControl.unlock_chevron()
+                    self.audio.play_chevron_unlock()
+                    sleep(config.audio_delay_time)
+                    break
+
             if config.enable_gary_jones and length == 7: # Not currently available for 8 or 9-symbol addresses
                 # Wait for play_chevron_lock() to finish
                 while self.audio.is_playing():
@@ -64,8 +77,13 @@ class DialProgram:
             else:
                 direction = StargateControl.FORWARD
 
-        if(config.enable_network and callback is not None):
-            callback()
+        #if not connected return
+        if(config.enable_network):
+            if(not self.outConnected):
+                self.lightControl.all_off()
+                DialProgram.is_dialing = False
+                return
+
         self.audio.play_open()
         self.lightControl.all_on()
         sleep(1)
@@ -75,7 +93,7 @@ class DialProgram:
 
         
         if config.play_theme:
-                    self.audio.play_theme()
+            self.audio.play_theme()
 
         while self.audio.is_playing():
             sleep(0.1)
@@ -85,7 +103,6 @@ class DialProgram:
 
     def dialed(self,callback):
         DialProgram.is_dialed = True
-        self.lightControl.all_off()
         self.lightControl.all_off()
 
         for i in [4,5,6,7,1,2,3]:
